@@ -53,9 +53,9 @@ const DIGEST = "sha-512";
 
 export async function registerUser(values: z.infer<typeof formSchemaSignUp>) {
   const imageUrls = [
-    "https://bit.ly/3VdCHWn",
-    "https://bit.ly/3wEBqhK",
-    "https://bit.ly/3WXzb3v",
+    "https://www.dropbox.com/scl/fi/pvrmpp405tj6coe3ryhzp/dragon_dance.jpeg?rlkey=4xtx55fgi8qgp6zqns7m0zv26&st=3bdfuz3v&raw=1",
+    "https://www.dropbox.com/scl/fi/26mpwdhw236pq3miy9n3k/celestial_dance.jpeg?rlkey=m8aqi7zlyjm5o3obuc19xl5hi&st=izvr1mre&raw=1",
+    "https://www.dropbox.com/scl/fi/1w42bkuk1avar4xyy0wv4/lion_velocious_hair.jpeg?rlkey=kb214iq8l15as2l1jsngi9iz9&st=nsbbplad&raw=1",
   ];
 
   const validatedFields = formSchemaSignUp.safeParse(values);

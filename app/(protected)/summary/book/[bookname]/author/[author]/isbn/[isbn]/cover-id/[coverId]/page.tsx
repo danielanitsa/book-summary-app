@@ -63,6 +63,7 @@ export default async function Page({
         bookname={params!.bookname}
         author={params!.author}
         isbn={params!.isbn}
+        coverId={params!.coverId}
       />
     </div>
   );

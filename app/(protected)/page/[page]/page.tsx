@@ -1,6 +1,6 @@
 import SharedLayout from "@/components/SharedLayout";
 import BookCard from "@/components/book-card";
-import { Book, BooksResponse, getBooksByCategory } from "@/lib/book";
+import { BooksResponse, getBooksByCategory } from "@/lib/book";
 
 const categories: string[] = [
   "business",

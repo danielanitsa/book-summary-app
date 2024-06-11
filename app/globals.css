@@ -79,29 +79,16 @@ body {
   overflow-y: scroll;
 }
 
-@keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.typewriter-container {
-  display: inline-flex;
-  align-items: baseline;
-}
-
-.cursor {
-  animation: blink 1s infinite;
-}
-
 #markdown-content h2 {
   font-size: 1.5em;
+  font-weight: bold;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  color: var(--secondary-foreground);
+}
+
+#markdown-content h3 {
+  font-size: 1.3em;
   font-weight: bold;
   margin-top: 1.5em;
   margin-bottom: 0.5em;

@@ -3,7 +3,7 @@ export const generatePrompt = (
   author: string,
   isbn: number,
 ): string => {
-  return `I need a detailed yet concise summary of the book title ${bookname} by ${author}, with ISBN: ${isbn} . Please focus on the main concepts, methodologies, and key takeaways. Structure the summary with clear headings for each section: Introduction, Core Concepts, Methodologies, and Key Takeaways. Aim for a length of 400-500 words. I’m short on time, so make it as informative and brief as possible, highlighting the most critical points. The flow of the summary should be like an essay with an educative and fun tone. Output your answer in markdown and not plain text.
+  return `I need a detailed yet concise summary of the book title ${bookname} by ${author}, with ISBN: ${isbn} . Please focus on the main concepts, methodologies, and key takeaways. Structure the summary with clear headings for each section: Introduction, Core Concepts, Methodologies, and Key Takeaways. Aim for a length of 1600-1800 characters. You must not excceed this character limit. I’m short on time, so make it as informative and brief as possible, highlighting the most critical points. The flow of the summary should be like an essay with an educative and fun tone. Output your answer in markdown and not plain text.
 ## Example 1: *Atomic Habits by James Clear*
 
 ### Summary:

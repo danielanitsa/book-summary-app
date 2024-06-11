@@ -4,8 +4,11 @@ import { ChevronRight } from "lucide-react";
 import ClientSearchInput from "./MainSearchInput.client";
 import { Button } from "./ui/button";
 import Link from "next/link";
+import Image from "next/image";
+import { auth } from "@/auth";
+import { db } from "@/db/db";
 
-export default function SharedLayout({
+export default async function SharedLayout({
   children,
   currentPage,
   query,
@@ -16,16 +19,46 @@ export default function SharedLayout({
   query?: string;
   hasMoreBooks?: boolean;
 }) {
+  const session = await auth();
+
   const basePath = query ? `/search/${query}/page/` : `/page/`;
   const previousPageLink = `${basePath}${currentPage - 1}`;
   const nextPageLink = `${basePath}${currentPage + 1}`;
+  console.log(session?.user.image);
 
+  const dbImage = await db.user.findFirst({
+    where: {
+      id: session?.user.id,
+    },
+    select: {
+      image: true,
+    },
+  });
+
+  const userImage = dbImage?.image;
+
+  console.log(dbImage);
   return (
     <>
       <div className="container mx-auto px-4 py-6">
-        <Suspense fallback={<h1>loading search bar...</h1>}>
-          <ClientSearchInput placeholder="Search for book..." />
-        </Suspense>
+        <nav className="flex flex-row">
+          <Suspense fallback={<h1>loading search bar...</h1>}>
+            <ClientSearchInput placeholder="Search for book..." />
+          </Suspense>
+
+          {userImage ? (
+            <div className="ml-4">
+              <Image
+                src={userImage}
+                alt="User Avatar"
+                width={40}
+                height={40}
+                className="rounded-full hover:scale-125 transition-all cursor-pointer"
+                priority
+              />
+            </div>
+          ) : null}
+        </nav>
         <div className="py-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {children}

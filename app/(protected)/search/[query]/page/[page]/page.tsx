@@ -2,21 +2,7 @@ import SharedLayout from "@/components/SharedLayout";
 import BookCard from "@/components/book-card";
 import { BooksResponse, searchBooks } from "@/lib/book";
 
-export const revalidate = 30;
-
-export async function generateStaticParams({
-  params,
-}: {
-  params: { query: string };
-}) {
-  const books: BooksResponse = await searchBooks(params.query);
-
-  return books.books.map((query) => {
-    return {
-      query: encodeURI(query.title),
-    };
-  });
-}
+export const dynamic = "force-dynamic";
 
 export default async function Page({
   params,

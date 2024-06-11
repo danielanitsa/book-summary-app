@@ -10,34 +10,63 @@ import { ReactTyped } from "react-typed";
 import Markdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
+import AudioPlayer from "./audio-player";
+import AudioPlayerSkeleton from "./audio-player-skeleton";
+import FormError from "./form-error";
+import FormSuccess from "./form-success";
 
-async function fetchSummary(bookname: string, author: string, isbn: string) {
+async function fetchSummary(
+  bookname: string,
+  author: string,
+  isbn: string,
+  coverId: string,
+) {
   const response = await fetch("/api/generate-summary", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ bookname, author, isbn }),
+    body: JSON.stringify({ bookname, author, isbn, coverId }),
   });
 
   const data = await response.json();
   return data.summary;
 }
 
+async function fetchAudioSummary(summary: string) {
+  const response = await fetch("/api/generate-audio-summary", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      summary: summary,
+    }),
+  });
+
+  const data = await response.json();
+  return data.audioUrl;
+}
+
 interface BookSummaryProps {
   bookname: string;
   author: string;
   isbn: number;
+  coverId: number;
 }
 
 const BookSummary: React.FC<BookSummaryProps> = ({
   bookname,
   author,
   isbn,
+  coverId,
 }) => {
   const [summary, setSummary] = useState<string | null>(null);
   const [clicked, setClicked] = useState<boolean>(false);
+  const [audioSummaryUrl, setAudioSummaryUrl] = useState<string>("");
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
 
   const handleGenerateSummary = async (
     bookname: string,
@@ -45,14 +74,31 @@ const BookSummary: React.FC<BookSummaryProps> = ({
     isbn: number,
   ) => {
     setClicked(true);
-    startTransition(async () => {
-      const summary = await fetchSummary(
+    startTransition(() => {
+      setError("");
+      setSuccess("");
+      fetchSummary(
         `${encodeURI(bookname)}`,
         `${encodeURI(author)}`,
         isbn.toString(),
-      );
-
-      setSummary(summary);
+        coverId.toString(),
+      )
+        .then(async (summary) => {
+          setSummary(summary);
+          try {
+            const audioSummary = await fetchAudioSummary(summary);
+            setAudioSummaryUrl(audioSummary);
+            setSuccess("Audio summary generated successfully.");
+            setError(""); // Clear any previous errors
+          } catch (audioError) {
+            console.error("An error occurred:", audioError);
+            setError("An error occurred while generating the audio summary."); // Display a generic error message
+          }
+        })
+        .catch((summaryError) => {
+          console.error("An error occurred:", summaryError);
+          setError("An error occurred while fetching the summary."); // Display a generic error message
+        });
     });
   };
 
@@ -62,6 +108,7 @@ const BookSummary: React.FC<BookSummaryProps> = ({
         <Button
           className="w-full md:w-auto flex flex-row-reverse items-center justify-center"
           onClick={() => handleGenerateSummary(bookname, author, isbn)}
+          type="button"
           disabled={isPending}
         >
           Generate Detailed Book Summary
@@ -71,7 +118,7 @@ const BookSummary: React.FC<BookSummaryProps> = ({
       {clicked ? (
         <Suspense fallback={<BookSummarySkeleton />}>
           {summary ? (
-            <section className="max-h-[500px] overflow-scroll bg-primary-foreground p-6 md:p-12 rounded-lg shadow-md">
+            <section className="max-h-[500px] mb-4 overflow-scroll bg-primary-foreground p-6 md:p-12 rounded-lg shadow-md">
               <div className="flex flex-col items-center justify-center space-y-4">
                 <h2 className="text-2xl font-bold text-secondary-foreground">
                   Book Summary
@@ -104,6 +151,18 @@ const BookSummary: React.FC<BookSummaryProps> = ({
             <BookSummarySkeleton />
           )}
         </Suspense>
+      ) : null}
+      {clicked ? (
+        audioSummaryUrl ? (
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <FormSuccess message={success} />
+            <AudioPlayer audioPath={audioSummaryUrl} />
+          </div>
+        ) : error ? (
+          <FormError message={error} />
+        ) : (
+          <AudioPlayerSkeleton />
+        )
       ) : null}
     </>
   );

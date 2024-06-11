@@ -53,6 +53,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   password      String?
+    favorites Favorite[] 
+  
  
   @@map("users")
 }
@@ -64,4 +66,33 @@ model VerificationToken {
  
   @@unique([identifier, token])
   @@map("verificationtokens")
+}
+
+model Book {
+  id        Int      @id @default(autoincrement())
+  isbn      String   @unique
+  title     String
+  author    String
+  coverUrl  String?
+  summary   Summary?
+  favorites Favorite[]
+}
+
+model Summary {
+  id      Int    @id @default(autoincrement())
+  bookId  Int    @unique
+  content String
+  audioUrl String?
+  likes    Int    @default(0)
+  book    Book   @relation(fields: [bookId], references: [id])
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  bookId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
 }

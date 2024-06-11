@@ -61,6 +61,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioPath }) => {
     setCurrentTime(audio.currentTime);
   };
 
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
   return (
     <div className="relative p-4 w-full max-w-lg mx-auto bg-glass backdrop-blur-md rounded-lg shadow-lg">
       <div className="flex items-center justify-between p-4">
@@ -68,7 +74,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioPath }) => {
           <h2 className="text-lg font-bold text-white">
             {isPlaying ? "Now Playing" : "Press The Button To Play"}
           </h2>
-          <p className="text-sm text-gray-300">{duration}</p>
+          <p className="text-sm text-gray-300">{`Duration ${formatTime(duration)}`}</p>
         </div>
         <div className="flex items-center space-x-4">
           <Button onClick={handleSkipBack}>
@@ -82,7 +88,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioPath }) => {
           </Button>
         </div>
       </div>
-      <div className="w-full bg-gray-300 rounded-full h-2.5 dark:bg-gray-700 mt-4">
+      <div>
         <input
           type="range"
           min="0"

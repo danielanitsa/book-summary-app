@@ -1,5 +1,4 @@
 // lib/books.ts
-import { revalidatePath } from "next/cache";
 import { cache } from "react";
 
 export interface Book {

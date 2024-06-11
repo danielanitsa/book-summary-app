@@ -1,6 +1,7 @@
 import { auth, signOut } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { revalidatePath } from "next/cache";
+import Image from "next/image";
 import React from "react";
 
 const Settings = async () => {

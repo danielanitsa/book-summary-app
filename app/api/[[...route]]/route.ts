@@ -1,14 +1,26 @@
 import { Hono } from "hono";
+import fs from "fs";
 import { handle } from "hono/vercel";
 import { logger } from "hono/logger";
 import { generatePrompt } from "@/app/utils/generatePrompt";
-
-export const runtime = "edge";
+import { generateAudioSummary } from "@/app/lib/deepgram";
+import { nanoid } from "nanoid";
+import { uploadToByteScale } from "@/app/lib/upload";
+import { db } from "@/db/db";
+import { getBookCoverUrl } from "@/lib/book";
 
 export interface SummaryResult {
   status: string;
   result: string;
   cost: number;
+}
+
+interface GenerateAudioSummaryRequest {
+  summary: string;
+}
+
+interface GenerateAudioSummaryResponse {
+  audioUrl: string;
 }
 
 export interface SummaryResponse {
@@ -19,10 +31,20 @@ const app = new Hono().basePath("/api");
 app.use(logger());
 
 app.post("/generate-summary", async (c) => {
-  const { bookname, author, isbn } = await c.req.json();
-  const prompt_ai: string = generatePrompt(bookname, author, isbn);
+  const { bookname, author, isbn, coverId } = await c.req.json();
+  const prompt_ai = generatePrompt(bookname, author, isbn);
 
-  const options = {
+  // Check if the summary already exists in the database
+  const existingBook = await db.book.findUnique({
+    where: { isbn: isbn },
+    include: { summary: true },
+  });
+
+  if (existingBook && existingBook.summary) {
+    return c.json({ summary: existingBook.summary.content });
+  }
+
+  const text_options = {
     method: "POST",
     headers: {
       accept: "application/json",
@@ -40,19 +62,87 @@ app.post("/generate-summary", async (c) => {
   };
 
   try {
-    const response = await fetch(
+    const textResponse = await fetch(
       "https://api.edenai.run/v2/text/summarize",
-      options,
+      text_options,
     );
-    const data: SummaryResponse = await response.json();
+    if (!textResponse.ok) {
+      throw new Error(
+        `Failed to fetch the text book summary: ${textResponse.statusText}`,
+      );
+    }
 
+    const textData = await textResponse.json();
     const modelKey = "anthropic/claude-3-sonnet-20240229-v1:0";
-    const summaryResult = data[modelKey].result; // Accessing using bracket notation
-    console.log(summaryResult);
+    const summaryResult = textData[modelKey]?.result;
+
+    if (!summaryResult) {
+      throw new Error("Failed to generate summary");
+    }
+
+    const cover = await getBookCoverUrl(coverId, null, "M");
+
+    // Save the summary to the database
+    const newBook = await db.book.upsert({
+      where: { isbn: isbn },
+      update: { title: bookname, author: author },
+      create: {
+        isbn: isbn,
+        title: bookname,
+        author: author,
+        coverUrl: cover.url,
+      },
+    });
+
+    await db.summary.create({
+      data: {
+        content: summaryResult,
+        bookId: newBook.id,
+      },
+    });
 
     return c.json({ summary: summaryResult });
+  } catch (error: unknown) {
+    console.error("Error:", error);
+    return c.json({ error: error }, 500);
+  }
+});
+
+app.post("/generate-audio-summary", async (c) => {
+  const { summary }: GenerateAudioSummaryRequest = await c.req.json();
+
+  if (!summary) {
+    return c.json({ error: "Summary is required" }, 400);
+  }
+
+  // Check if the audio summary already exists in the database
+  const existingSummary = await db.summary.findFirst({
+    where: { content: summary },
+  });
+
+  if (existingSummary && existingSummary.audioUrl) {
+    return c.json({ audioUrl: existingSummary.audioUrl });
+  }
+
+  try {
+    const fileNameId = nanoid();
+    const fileName = `${fileNameId}.wav`;
+    const filePath = await generateAudioSummary(summary, fileName);
+    const bytescaleUrl = await uploadToByteScale(filePath, fileName);
+
+    // Update the summary record with the audio URL
+    await db.summary.update({
+      where: { id: existingSummary?.id },
+      data: { audioUrl: bytescaleUrl },
+    });
+
+    // Remove the local file after uploading
+    await fs.promises.unlink(filePath);
+
+    return c.json({ audioUrl: bytescaleUrl });
   } catch (error) {
-    throw new Error(`${error}`);
+    console.error("Error in /api/generate-audio-summary:", error);
+    return c.json({ error: error }, 500);
   }
 });
 
