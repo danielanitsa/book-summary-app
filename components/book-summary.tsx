@@ -1,19 +1,25 @@
 "use client";
 
 // app/page.tsx
-import { Suspense, useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { PencilRuler } from "lucide-react";
 import { useTransition } from "react";
 import { Button } from "./ui/button";
-import BookSummarySkeleton from "./book-summary-skeleton";
 import { ReactTyped } from "react-typed";
-import Markdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
-import AudioPlayer from "./audio-player";
-import AudioPlayerSkeleton from "./audio-player-skeleton";
-import FormError from "./form-error";
-import FormSuccess from "./form-success";
+import dynamic from "next/dynamic";
+
+const AudioPlayer = dynamic(() => import("./audio-player"));
+const AudioPlayerSkeleton = dynamic(() => import("./audio-player-skeleton"));
+const FormError = dynamic(() => import("./form-error"));
+const FormSuccess = dynamic(() => import("./form-success"));
+const Markdown = dynamic(() => import("react-markdown"));
+const BookSummarySkeleton = lazy(() =>
+  import("./book-summary-skeleton").then((module) => ({
+    default: module.default,
+  })),
+);
 
 async function fetchSummary(
   bookname: string,
@@ -29,6 +35,10 @@ async function fetchSummary(
     body: JSON.stringify({ bookname, author, isbn, coverId }),
   });
 
+  if (!response.ok) {
+    throw new Error("Failed to fetch summary");
+  }
+
   const data = await response.json();
   return data.summary;
 }
@@ -39,10 +49,12 @@ async function fetchAudioSummary(summary: string) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      summary: summary,
-    }),
+    body: JSON.stringify({ summary }),
   });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch audio summary");
+  }
 
   const data = await response.json();
   return data.audioUrl;
@@ -153,16 +165,18 @@ const BookSummary: React.FC<BookSummaryProps> = ({
         </Suspense>
       ) : null}
       {clicked ? (
-        audioSummaryUrl ? (
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <FormSuccess message={success} />
-            <AudioPlayer audioPath={audioSummaryUrl} />
-          </div>
-        ) : error ? (
-          <FormError message={error} />
-        ) : (
-          <AudioPlayerSkeleton />
-        )
+        <Suspense fallback={<AudioPlayerSkeleton />}>
+          {audioSummaryUrl ? (
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <FormSuccess message={success} />
+              <AudioPlayer audioPath={audioSummaryUrl} />
+            </div>
+          ) : error ? (
+            <FormError message={error} />
+          ) : (
+            <AudioPlayerSkeleton />
+          )}
+        </Suspense>
       ) : null}
     </>
   );

@@ -13,7 +13,7 @@ const categories: string[] = [
 export const revalidate = 30;
 
 export async function generateStaticParams() {
-  const params = Array.from({ length: 200 }, (_, i) => ({
+  const params = Array.from({ length: 300 }, (_, i) => ({
     page: (i + 1).toString(),
   }));
 
@@ -33,7 +33,6 @@ export default async function Page({ params }: { params?: { page: number } }) {
     currentPage,
     limit,
   );
-
   const hasMoreBooks = books.books.length === limit;
 
   return (

@@ -1,4 +1,3 @@
-import GitHub from "next-auth/providers/github";
 import type { NextAuthConfig } from "next-auth";
 import google from "next-auth/providers/google";
 import credentials from "next-auth/providers/credentials";
@@ -6,7 +5,6 @@ import { formSchemaSignIn } from "./app/lib/validators";
 import { getUserByEmail } from "./app/lib/user";
 import { pbkdf2Sync } from "crypto";
 
-const SALT_LENGTH = 16;
 const HASH_LENGTH = 64;
 const ITERATIONS = 100000;
 const DIGEST = "sha512";

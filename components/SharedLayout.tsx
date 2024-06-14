@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { ChevronLeft } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import ClientSearchInput from "./MainSearchInput.client";
@@ -24,7 +23,6 @@ export default async function SharedLayout({
   const basePath = query ? `/search/${query}/page/` : `/page/`;
   const previousPageLink = `${basePath}${currentPage - 1}`;
   const nextPageLink = `${basePath}${currentPage + 1}`;
-  console.log(session?.user.image);
 
   const dbImage = await db.user.findFirst({
     where: {
@@ -35,16 +33,12 @@ export default async function SharedLayout({
     },
   });
 
-  const userImage = dbImage?.image;
-
-  console.log(dbImage);
+  const userImage = dbImage?.image || session?.user.image;
   return (
     <>
       <div className="container mx-auto px-4 py-6">
         <nav className="flex flex-row">
-          <Suspense fallback={<h1>loading search bar...</h1>}>
-            <ClientSearchInput placeholder="Search for book..." />
-          </Suspense>
+          <ClientSearchInput placeholder="Search for book..." />
 
           {userImage ? (
             <div className="ml-4">

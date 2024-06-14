@@ -12,7 +12,6 @@ export const uploadToByteScale = async (
   fileName: string,
 ): Promise<string> => {
   try {
-    console.log("Uploading to ByteScale...");
     const fileStream = fs.createReadStream(filePath);
     const stats = await fs.promises.stat(filePath);
 
@@ -22,8 +21,6 @@ export const uploadToByteScale = async (
       originalFileName: fileName,
       size: stats.size,
     });
-
-    console.log("File uploaded:", fileUrl);
 
     if (!fileUrl) {
       throw new Error("Failed to upload to ByteScale");

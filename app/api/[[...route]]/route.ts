@@ -19,10 +19,6 @@ interface GenerateAudioSummaryRequest {
   summary: string;
 }
 
-interface GenerateAudioSummaryResponse {
-  audioUrl: string;
-}
-
 export interface SummaryResponse {
   [key: string]: SummaryResult;
 }
@@ -142,6 +138,56 @@ app.post("/generate-audio-summary", async (c) => {
     return c.json({ audioUrl: bytescaleUrl });
   } catch (error) {
     console.error("Error in /api/generate-audio-summary:", error);
+    return c.json({ error: error }, 500);
+  }
+});
+
+app.post("/add-favorite", async (c) => {
+  const { userId, bookId, bookDetails, coverId } = await c.req.json();
+
+  if (!userId || !bookId) {
+    return c.json({ error: "User ID and Book ID are required" }, 400);
+  }
+
+  try {
+    // Check if the book exists in the Book table
+    let book = await db.book.findUnique({
+      where: { id: bookId },
+    });
+    const coverUrl = await getBookCoverUrl(coverId, null, "M");
+    // If the book does not exist, insert it
+    if (!book) {
+      book = await db.book.create({
+        data: {
+          id: bookId,
+          isbn: bookDetails.isbn,
+          title: bookDetails.title,
+          author: bookDetails.author,
+          coverUrl: coverUrl.url, // Optional
+        },
+      });
+    }
+
+    // Check if the book is already in the user's favorites
+    const existingFavorite = await db.favorite.findUnique({
+      where: { userId_bookId: { userId, bookId } },
+    });
+
+    if (existingFavorite) {
+      return c.json({ message: "Book is already in favorites" }, 200);
+    }
+
+    // Add the book to the user's favorites
+    const newFavorite = await db.favorite.create({
+      data: {
+        userId,
+        bookId,
+      },
+    });
+
+    return c.json({ favorite: newFavorite });
+  } catch (error) {
+    console.error("Error adding favorite:", error);
     return c.json({ error: error }, 500);
   }
 });

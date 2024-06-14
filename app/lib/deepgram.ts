@@ -31,7 +31,6 @@ export const generateAudioSummary = async (
   const filePath = path.join(__dirname, fileName);
 
   await fs.promises.writeFile(filePath, buffer);
-  console.log(`Audio file written to ${filePath}`);
 
   return filePath;
 };
