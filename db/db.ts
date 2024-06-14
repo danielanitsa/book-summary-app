@@ -2,6 +2,8 @@ import { Pool } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "@prisma/client";
 
+export const runtime = "edge";
+
 // Check if there's already a PrismaClient instance in the global scope
 const globalForPrisma = global as unknown as {
   prisma: PrismaClient | undefined;

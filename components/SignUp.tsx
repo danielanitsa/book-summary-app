@@ -25,10 +25,8 @@ import Image from "next/image";
 import google from "../public/google.svg";
 import { naSignIn, registerUser } from "@/app/lib/actions";
 import { formSchemaSignUp } from "@/app/lib/validators";
-import dynamic from "next/dynamic";
-
-const FormError = dynamic(() => import("./form-error"));
-const FormSuccess = dynamic(() => import("./form-success"));
+import FormSuccess from "./form-success";
+import FormError from "./form-error";
 
 const SignupForm = () => {
   const [error, setError] = useState<string | undefined>("");

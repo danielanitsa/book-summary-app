@@ -26,10 +26,8 @@ import { Input } from "./ui/input";
 import Image from "next/image";
 import { formSchemaSignIn } from "@/app/lib/validators";
 import { useState } from "react";
-import dynamic from "next/dynamic";
-
-const FormError = dynamic(() => import("./form-error"));
-const FormSuccess = dynamic(() => import("./form-success"));
+import FormError from "./form-error";
+import FormSuccess from "./form-success";
 
 const SignIn: React.FC = () => {
   const [error, setError] = useState<string | undefined>("");
