@@ -55,11 +55,9 @@ export default async function Page({
         getBookCoverUrl(params.coverId, null, "L"),
       ]);
 
-      console.log(books);
       if (books.length > 0) {
         book = books[0];
         bookCover = coverUrl.url;
-        console.log(bookCover);
       } else {
         book = specificBookOpenLibrary;
         bookCover = coverUrl.url;
