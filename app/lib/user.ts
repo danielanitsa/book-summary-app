@@ -1,7 +1,5 @@
 import { db } from "@/db/db";
 
-export const runtime = "edge";
-
 export const getUserByEmail = async (email: string) => {
   try {
     const user = await db.user.findUnique({ where: { email } });
