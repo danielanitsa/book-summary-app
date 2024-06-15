@@ -3,7 +3,6 @@
   publish = ".next"
 
 [plugins]
-  [[plugins]]
     package = "@netlify/plugin-nextjs"
 
 [functions]
