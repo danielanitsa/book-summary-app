@@ -2,7 +2,14 @@
   command = "bun run build"
   publish = ".next"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+[plugins]
+  [[plugins]]
+    package = "@netlify/plugin-nextjs"
 
+[functions]
+  node_bundler = "esbuild"
+
+[[edge_functions]]
+  function = "middleware"
+  path = "/*"
 
